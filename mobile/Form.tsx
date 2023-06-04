@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { StyleSheet, View, TextInput, Button, Text } from 'react-native';
 
 export default function Form() {
@@ -15,16 +16,9 @@ export default function Form() {
       gender: gender,
     };
 
-    // Implementar a lógica para enviar a solicitação POST para criar um urso
-    fetch('/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(ursoData),
-    })
+    axios.post('/create', ursoData)
       .then((response) => {
-        if (response.ok) {
+        if (response.status === 200) {
           alert('Urso criado com sucesso!');
           setName('');
           setAge('');
