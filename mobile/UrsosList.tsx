@@ -34,16 +34,16 @@ export default function UrsosList() {
       });
   };
 
-  const deleteUrso = (id: string) => {
+  const deleteUrsoByName = (name: string) => {
     const confirmDelete = window.confirm('Tem certeza que deseja excluir este urso?');
-
+  
     if (confirmDelete) {
-      axios.delete(`http://localhost:3333/ursos/${id}`)
+      axios.delete(`http://localhost:3333/ursos/${encodeURIComponent(name)}`)
         .then((response) => {
           if (response.status === 200) {
             alert('Urso excluído com sucesso!');
             // Remover o urso excluído da lista
-            setUrsos(ursos.filter((urso) => urso.id !== id));
+            setUrsos(ursos.filter((urso) => urso.name !== name));
           } else {
             alert('Erro ao excluir urso. Por favor, tente novamente.');
           }
@@ -54,6 +54,9 @@ export default function UrsosList() {
         });
     }
   };
+  
+
+   
 
   const searchUrsos = () => {
     axios.get(`http://localhost:3333/ursos/search?query=${searchQuery}`)
@@ -93,7 +96,7 @@ export default function UrsosList() {
             <Text style={styles.ursosItemText}>
               {item.gender ? 'Masculino' : 'Feminino'}
             </Text>
-            <Button title="Excluir" onPress={() => deleteUrso(item.id)} />
+            <Button title="Excluir" onPress={() => deleteUrsoByName(item.name)} />
           </View>
         )}
       />
