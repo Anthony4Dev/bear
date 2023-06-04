@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { StyleSheet, FlatList, View, Text, Button } from 'react-native';
+import { StyleSheet, View, TextInput, Button, Text, FlatList } from 'react-native';
 
 interface Urso {
   id: string;
@@ -12,6 +12,7 @@ interface Urso {
 
 export default function UrsosList() {
   const [ursos, setUrsos] = useState<Urso[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     // Carregar a lista de ursos do servidor
@@ -19,18 +20,17 @@ export default function UrsosList() {
   }, []);
 
   const fetchUrsos = () => {
-    // Implementar a lógica para carregar a lista de ursos do servidor
     axios.get('http://localhost:3333/ursos')
       .then((response) => {
         if (response.status === 200) {
           setUrsos(response.data);
         } else {
-          alert('Erro ao carregar lista de ursos. Por favor, tente novamente.');
+          alert('Erro ao buscar ursos. Por favor, tente novamente.');
         }
       })
       .catch((error) => {
-        console.error('Erro ao carregar lista de ursos:', error);
-        alert('Erro ao carregar lista de ursos. Por favor, tente novamente.');
+        console.error('Erro ao buscar ursos:', error);
+        alert('Erro ao buscar ursos. Por favor, tente novamente.');
       });
   };
 
@@ -55,26 +55,71 @@ export default function UrsosList() {
     }
   };
 
+  const searchUrsos = () => {
+    axios.get(`http://localhost:3333/ursos/search?query=${searchQuery}`)
+      .then((response) => {
+        if (response.status === 200) {
+          setUrsos(response.data);
+        } else {
+          alert('Erro ao pesquisar ursos. Por favor, tente novamente.');
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao pesquisar ursos:', error);
+        alert('Erro ao pesquisar ursos. Por favor, tente novamente.');
+      });
+  };
+
   return (
-    <FlatList
-      data={ursos}
-      keyExtractor={(urso) => urso.id}
-      renderItem={({ item }) => (
-        <View style={styles.ursosItem}>
-          <Text style={styles.ursosItemText}>{item.name}</Text>
-          <Text style={styles.ursosItemText}>{item.age}</Text>
-          <Text style={styles.ursosItemText}>{item.description}</Text>
-          <Text style={styles.ursosItemText}>
-            {item.gender ? 'Masculino' : 'Feminino'}
-          </Text>
-          <Button title="Excluir" onPress={() => deleteUrso(item.id)} />
-        </View>
-      )}
-    />
+    <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Pesquisar urso"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <Button title="Pesquisar" onPress={searchUrsos} />
+      </View>
+      <Button title="Buscar Todos" onPress={fetchUrsos} />
+      <FlatList
+        data={ursos}
+        keyExtractor={(urso) => urso.id}
+        renderItem={({ item }) => (
+          <View style={styles.ursosItem}>
+            <Text style={styles.ursosItemText}>{item.name}</Text>
+            <Text style={styles.ursosItemText}>{item.age}</Text>
+            <Text style={styles.ursosItemText}>{item.description}</Text>
+            <Text style={styles.ursosItemText}>
+              {item.gender ? 'Masculino' : 'Feminino'}
+            </Text>
+            <Button title="Excluir" onPress={() => deleteUrso(item.id)} />
+          </View>
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderRadius: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 10,
+  },
   ursosItem: {
     backgroundColor: '#FFF',
     borderRadius: 8,
