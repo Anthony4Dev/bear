@@ -20,7 +20,7 @@ export default function UrsosList() {
 
   const fetchUrsos = () => {
     // Implementar a lógica para carregar a lista de ursos do servidor
-    axios.get('/ursos')
+    axios.get('http://localhost:3333/ursos')
       .then((response) => {
         if (response.status === 200) {
           setUrsos(response.data);
@@ -38,7 +38,7 @@ export default function UrsosList() {
     const confirmDelete = window.confirm('Tem certeza que deseja excluir este urso?');
 
     if (confirmDelete) {
-      axios.delete(`/ursos/${id}`)
+      axios.delete(`http://localhost:3333/ursos/${id}`)
         .then((response) => {
           if (response.status === 200) {
             alert('Urso excluído com sucesso!');

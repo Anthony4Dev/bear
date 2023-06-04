@@ -16,7 +16,7 @@ export default function Form() {
       gender: gender,
     };
 
-    axios.post('/create', ursoData)
+    axios.post('http://localhost:3333/create', ursoData)
       .then((response) => {
         if (response.status === 200) {
           alert('Urso criado com sucesso!');
