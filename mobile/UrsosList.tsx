@@ -14,6 +14,26 @@ export default function UrsosList() {
 
   const deleteUrso = (id: string) => {
     // Implementar a lógica para excluir um urso
+    const confirmDelete = confirm('Tem certeza que deseja excluir este urso?');
+
+    if (confirmDelete) {
+      // Implementar a lógica para enviar a solicitação DELETE para excluir um urso
+      fetch(`/ursos/${id}`, {
+        method: 'DELETE',
+      })
+        .then((response) => {
+          if (response.ok) {
+            alert('Urso excluído com sucesso!');
+            // Atualizar a lista de ursos após a exclusão
+          } else {
+            alert('Erro ao excluir urso. Por favor, tente novamente.');
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao excluir urso:', error);
+          alert('Erro ao excluir urso. Por favor, tente novamente.');
+        });
+    }
   };
 
   return (
