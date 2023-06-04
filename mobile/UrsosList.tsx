@@ -13,6 +13,7 @@ interface Urso {
 export default function UrsosList() {
   const [ursos, setUrsos] = useState<Urso[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingUrso, setEditingUrso] = useState<Urso | null>(null);
 
   useEffect(() => {
     // Carregar a lista de ursos do servidor
@@ -20,7 +21,8 @@ export default function UrsosList() {
   }, []);
 
   const fetchUrsos = () => {
-    axios.get('http://localhost:3333/ursos')
+    axios
+      .get('http://localhost:3333/ursos')
       .then((response) => {
         if (response.status === 200) {
           setUrsos(response.data);
@@ -36,9 +38,10 @@ export default function UrsosList() {
 
   const deleteUrsoByName = (name: string) => {
     const confirmDelete = window.confirm('Tem certeza que deseja excluir este urso?');
-  
+
     if (confirmDelete) {
-      axios.delete(`http://localhost:3333/ursos/${encodeURIComponent(name)}`)
+      axios
+        .delete(`http://localhost:3333/ursos/${encodeURIComponent(name)}`)
         .then((response) => {
           if (response.status === 200) {
             alert('Urso excluído com sucesso!');
@@ -54,12 +57,43 @@ export default function UrsosList() {
         });
     }
   };
-  
 
-   
+  const updateUrso = (urso: Urso) => {
+    axios
+      .put(`http://localhost:3333/ursos/${encodeURIComponent(urso.name)}`, urso)
+      .then((response) => {
+        if (response.status === 200) {
+          alert('Urso atualizado com sucesso!');
+          // Atualizar a lista de ursos
+          setUrsos((prevUrsos) =>
+            prevUrsos.map((item) => (item.name === urso.name ? urso : item))
+          );
+          setEditingUrso(null); // Limpar o estado de edição
+        } else {
+          alert('Erro ao atualizar urso. Por favor, tente novamente.');
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao atualizar urso:', error);
+        alert('Erro ao atualizar urso. Por favor, tente novamente.');
+      });
+  };
+
+  const cancelEditing = () => {
+    setEditingUrso(null);
+  };
+
+  const startEditing = (urso: Urso) => {
+    setEditingUrso(urso);
+  };
+
+  const saveEditing = () => {
+    updateUrso(editingUrso!); // Asserting non-null using "!"
+  };
 
   const searchUrsos = () => {
-    axios.get(`http://localhost:3333/ursos/search?query=${searchQuery}`)
+    axios
+      .get(`http://localhost:3333/ursos/search?query=${searchQuery}`)
       .then((response) => {
         if (response.status === 200) {
           setUrsos(response.data);
@@ -90,13 +124,57 @@ export default function UrsosList() {
         keyExtractor={(urso) => urso.id}
         renderItem={({ item }) => (
           <View style={styles.ursosItem}>
-            <Text style={styles.ursosItemText}>{item.name}</Text>
-            <Text style={styles.ursosItemText}>{item.age}</Text>
-            <Text style={styles.ursosItemText}>{item.description}</Text>
-            <Text style={styles.ursosItemText}>
-              {item.gender ? 'Masculino' : 'Feminino'}
-            </Text>
-            <Button title="Excluir" onPress={() => deleteUrsoByName(item.name)} />
+            {editingUrso && editingUrso.name === item.name ? (
+              <>
+                <TextInput
+                  style={styles.input}
+                  value={editingUrso.name}
+                  onChangeText={(value) =>
+                    setEditingUrso((prevUrso) => ({ ...prevUrso!, name: value }))
+                  }
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editingUrso.age.toString()}
+                  onChangeText={(value) =>
+                    setEditingUrso((prevUrso) => ({
+                      ...prevUrso!,
+                      age: parseInt(value, 10),
+                    }))
+                  }
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editingUrso.description}
+                  onChangeText={(value) =>
+                    setEditingUrso((prevUrso) => ({ ...prevUrso!, description: value }))
+                  }
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editingUrso.gender ? 'Masculino' : 'Feminino'}
+                  onChangeText={(value) =>
+                    setEditingUrso((prevUrso) => ({
+                      ...prevUrso!,
+                      gender: value.toLowerCase() === 'masculino',
+                    }))
+                  }
+                />
+                <Button title="Salvar" onPress={saveEditing} />
+                <Button title="Cancelar" onPress={cancelEditing} />
+              </>
+            ) : (
+              <>
+                <Text style={styles.ursosItemText}>{item.name}</Text>
+                <Text style={styles.ursosItemText}>{item.age}</Text>
+                <Text style={styles.ursosItemText}>{item.description}</Text>
+                <Text style={styles.ursosItemText}>
+                  {item.gender ? 'Masculino' : 'Feminino'}
+                </Text>
+                <Button title="Editar" onPress={() => startEditing(item)} />
+                <Button title="Excluir" onPress={() => deleteUrsoByName(item.name)} />
+              </>
+            )}
           </View>
         )}
       />
