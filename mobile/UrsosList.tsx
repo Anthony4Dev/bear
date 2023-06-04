@@ -14,6 +14,10 @@ export default function UrsosList() {
   const [ursos, setUrsos] = useState<Urso[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingUrso, setEditingUrso] = useState<Urso | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [editingAge, setEditingAge] = useState<number | undefined>(undefined);
+  const [editingDescription, setEditingDescription] = useState('');
+  const [editingGender, setEditingGender] = useState(false);
 
   useEffect(() => {
     // Carregar a lista de ursos do servidor
@@ -85,10 +89,28 @@ export default function UrsosList() {
 
   const startEditing = (urso: Urso) => {
     setEditingUrso(urso);
+    setEditingName(urso.name);
+    setEditingAge(urso.age);
+    setEditingDescription(urso.description);
+    setEditingGender(urso.gender);
   };
 
   const saveEditing = () => {
-    updateUrso(editingUrso!); // Asserting non-null using "!"
+    if (editingUrso) {
+      const updatedUrso: Urso = {
+        ...editingUrso,
+        name: editingName,
+        age: editingAge || 0,
+        description: editingDescription,
+        gender: editingGender,
+      };
+
+      updateUrso(updatedUrso);
+    }
+  };
+
+  const toggleGender = () => {
+    setEditingGender((prevGender) => !prevGender);
   };
 
   const searchUrsos = () => {
@@ -128,38 +150,25 @@ export default function UrsosList() {
               <>
                 <TextInput
                   style={styles.input}
-                  value={editingUrso.name}
-                  onChangeText={(value) =>
-                    setEditingUrso((prevUrso) => ({ ...prevUrso!, name: value }))
-                  }
+                  value={editingName}
+                  onChangeText={setEditingName}
                 />
                 <TextInput
                   style={styles.input}
-                  value={editingUrso.age.toString()}
-                  onChangeText={(value) =>
-                    setEditingUrso((prevUrso) => ({
-                      ...prevUrso!,
-                      age: parseInt(value, 10),
-                    }))
-                  }
+                  value={editingAge !== undefined ? editingAge.toString() : ''}
+                  onChangeText={(value) => setEditingAge(value ? parseInt(value, 10) : undefined)}
                 />
                 <TextInput
                   style={styles.input}
-                  value={editingUrso.description}
-                  onChangeText={(value) =>
-                    setEditingUrso((prevUrso) => ({ ...prevUrso!, description: value }))
-                  }
+                  value={editingDescription}
+                  onChangeText={setEditingDescription}
                 />
-                <TextInput
-                  style={styles.input}
-                  value={editingUrso.gender ? 'Masculino' : 'Feminino'}
-                  onChangeText={(value) =>
-                    setEditingUrso((prevUrso) => ({
-                      ...prevUrso!,
-                      gender: value.toLowerCase() === 'masculino',
-                    }))
-                  }
-                />
+                <View style={styles.genderButtonContainer}>
+                  <Button
+                    title={editingGender ? 'Masculino' : 'Feminino'}
+                    onPress={toggleGender}
+                  />
+                </View>
                 <Button title="Salvar" onPress={saveEditing} />
                 <Button title="Cancelar" onPress={cancelEditing} />
               </>
@@ -190,25 +199,23 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   input: {
     flex: 1,
+    marginRight: 8,
+    padding: 8,
     borderWidth: 1,
-    borderColor: '#CCC',
+    borderColor: '#ccc',
     borderRadius: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginRight: 10,
   },
   ursosItem: {
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   ursosItemText: {
-    fontSize: 16,
-    marginBottom: 5,
+    marginBottom: 4,
+  },
+  genderButtonContainer: {
+    marginBottom: 8,
   },
 });
