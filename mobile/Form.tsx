@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 
 export default function Form() {
   const [name, setName] = useState('');
@@ -11,7 +10,6 @@ export default function Form() {
   const createUrso = async () => {
     try {
       const ursoData = {
-        id: uuidv4(),
         name,
         age: parseInt(age),
         description,
@@ -20,7 +18,7 @@ export default function Form() {
 
       const response = await axios.post('http://localhost:3333/create', ursoData);
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         alert('Urso criado com sucesso!');
         setName('');
         setAge('');
@@ -39,9 +37,7 @@ export default function Form() {
     setGender(gender === 'masculino' ? 'feminino' : 'masculino');
   };
 
-  const handleAgeChange = (e) => {
-    const value = e.target.value;
-
+  const handleAgeChange = (value) => {
     if (/^\d*$/.test(value)) {
       setAge(value);
     }
@@ -50,7 +46,7 @@ export default function Form() {
   return (
     <div>
       <input type="text" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
-      <input type="text" placeholder="Idade" value={age} onChange={handleAgeChange} />
+      <input type="text" placeholder="Idade" value={age} onChange={(e) => handleAgeChange(e.target.value)} />
       <input type="text" placeholder="Descrição" value={description} onChange={(e) => setDescription(e.target.value)} />
 
       <button onClick={handleGenderToggle} style={{ backgroundColor: gender === 'masculino' ? 'blue' : 'pink', color: 'white' }}>
