@@ -62,25 +62,37 @@ export default function UrsosList() {
     }
   };
 
-  const updateUrso = (urso: Urso) => {
-    axios
-      .put(`http://localhost:3333/ursos/${encodeURIComponent(urso.name)}`, urso)
-      .then((response) => {
-        if (response.status === 200) {
-          alert('Urso atualizado com sucesso!');
-          // Atualizar a lista de ursos
-          setUrsos((prevUrsos) =>
-            prevUrsos.map((item) => (item.name === urso.name ? urso : item))
-          );
-          setEditingUrso(null); // Limpar o estado de edição
-        } else {
+  const updateUrsoByName = (name: string) => {
+    const editedUrso = ursos.find((urso) => urso.name === name);
+
+    if (editedUrso) {
+      const updatedUrso: Urso = {
+        ...editedUrso,
+        name: editingName,
+        age: editingAge || 0,
+        description: editingDescription,
+        gender: editingGender,
+      };
+
+      axios
+        .put(`http://localhost:3333/ursos/${encodeURIComponent(name)}`, updatedUrso)
+        .then((response) => {
+          if (response.status === 200) {
+            alert('Urso atualizado com sucesso!');
+            // Atualizar a lista de ursos
+            setUrsos((prevUrsos) =>
+              prevUrsos.map((urso) => (urso.name === name ? updatedUrso : urso))
+            );
+            setEditingUrso(null); // Limpar o estado de edição
+          } else {
+            alert('Erro ao atualizar urso. Por favor, tente novamente.');
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao atualizar urso:', error);
           alert('Erro ao atualizar urso. Por favor, tente novamente.');
-        }
-      })
-      .catch((error) => {
-        console.error('Erro ao atualizar urso:', error);
-        alert('Erro ao atualizar urso. Por favor, tente novamente.');
-      });
+        });
+    }
   };
 
   const cancelEditing = () => {
@@ -93,20 +105,6 @@ export default function UrsosList() {
     setEditingAge(urso.age);
     setEditingDescription(urso.description);
     setEditingGender(urso.gender);
-  };
-
-  const saveEditing = () => {
-    if (editingUrso) {
-      const updatedUrso: Urso = {
-        ...editingUrso,
-        name: editingName,
-        age: editingAge || 0,
-        description: editingDescription,
-        gender: editingGender,
-      };
-
-      updateUrso(updatedUrso);
-    }
   };
 
   const toggleGender = () => {
@@ -146,7 +144,7 @@ export default function UrsosList() {
         keyExtractor={(urso) => urso.id}
         renderItem={({ item }) => (
           <View style={styles.ursosItem}>
-            {editingUrso && editingUrso.name === item.name ? (
+            {editingUrso && editingUrso.id === item.id ? (
               <>
                 <TextInput
                   style={styles.input}
@@ -165,11 +163,14 @@ export default function UrsosList() {
                 />
                 <View style={styles.genderButtonContainer}>
                   <Button
-                    title={editingGender ? 'Masculino' : 'Feminino'}
+                    title={editingGender ? 'Macho' : 'Fêmea'}
                     onPress={toggleGender}
                   />
                 </View>
-                <Button title="Salvar" onPress={saveEditing} />
+                <Button
+                  title="Salvar"
+                  onPress={() => updateUrsoByName(editingUrso.name)}
+                />
                 <Button title="Cancelar" onPress={cancelEditing} />
               </>
             ) : (
@@ -178,10 +179,13 @@ export default function UrsosList() {
                 <Text style={styles.ursosItemText}>{item.age}</Text>
                 <Text style={styles.ursosItemText}>{item.description}</Text>
                 <Text style={styles.ursosItemText}>
-                  {item.gender ? 'Masculino' : 'Feminino'}
+                  {item.gender ? 'Macho' : 'Fêmea'}
                 </Text>
                 <Button title="Editar" onPress={() => startEditing(item)} />
-                <Button title="Excluir" onPress={() => deleteUrsoByName(item.name)} />
+                <Button
+                  title="Excluir"
+                  onPress={() => deleteUrsoByName(item.name)}
+                />
               </>
             )}
           </View>
@@ -198,8 +202,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   input: {
     flex: 1,
@@ -211,6 +214,10 @@ const styles = StyleSheet.create({
   },
   ursosItem: {
     marginBottom: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
   },
   ursosItemText: {
     marginBottom: 4,
